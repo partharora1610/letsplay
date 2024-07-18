@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleDetection": "force",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "baseUrl": "./src",
+    "experimentalDecorators": true,
+    "outDir": "./dist"
+  },
+  "ts-node": { "files": true },
+  "include": ["src/**/*"]
+}
