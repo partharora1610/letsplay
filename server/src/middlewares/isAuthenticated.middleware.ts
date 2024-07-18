@@ -5,18 +5,21 @@ import { IContext } from "interfaces/database"
 const isAuthenticated = (ctx: IContext) => {
   console.log("middleware: isAuthenticated")
   return async (req: Request, _: Response, next: NextFunction) => {
-    console.log("middleware: isAuthenticated: handler")
-    console.log("curreentID -> " + req.session.currentUserId)
+    console.log("session -> " + JSON.stringify(req.session))
 
     if (!req.session.currentUserId) {
       return next(new UnauthorizedError())
     }
+
     const user = await ctx.db.client.user.findFirst({
       where: { id: req.session.currentUserId },
     })
+
     if (!user) {
       return next(new UnauthorizedError())
     }
+
+    req.currentUser = user
     next()
   }
 }

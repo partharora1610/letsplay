@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,34 +10,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
-model Game {
-  id          String   @id @default(cuid())
-  players     Player[]
-  moves       Move[]
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  sub       String   @unique
+  games     Game[]
+  players   Player[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+model Game {
+  id        String   @id @default(cuid())
+  players   Player[]
+  moves     Move[]
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model Player {
-  id     String @id @default(cuid())
-  name   String
-  userId String
-  gameId String
-  game   Game   @relation(fields: [gameId], references: [id])
-  moves  Move[]
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id])
+  moves     Move[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Move { 
-  id       String @id @default(cuid())  
-
-  gameId   String
-  game     Game   @relation(fields: [gameId], references: [id])
-  
-  playerId String
-  player   Player @relation(fields: [playerId], references: [id])  
-  
-  move     String
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id])
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id])  
+  move      String
   createdAt DateTime @default(now())
-
+  updatedAt DateTime @updatedAt
 }

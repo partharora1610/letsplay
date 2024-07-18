@@ -1,4 +1,4 @@
-import create from "zustand"
+import { create } from "zustand"
 
 interface User {
   id: string
@@ -17,7 +17,7 @@ interface AuthState {
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
   setUser: (user: User) => set({ user, isAuthenticated: true }),
   clearUser: () => set({ user: null, isAuthenticated: false }),
   setLoading: (loading: boolean) => set({ loading }),

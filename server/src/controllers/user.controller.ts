@@ -6,6 +6,8 @@ export default class UserController extends AbstractController {
   get() {
     return [
       async (req: Request, res: Response) => {
+        console.log({ id: req.session.currentUserId })
+
         const user = await this.ctx.db.client.user.findFirst({
           where: { id: req.session.currentUserId },
           select: UserDto,

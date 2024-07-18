@@ -15,6 +15,8 @@ const useFetchUser = () => {
           withCredentials: true,
         })
 
+        console.log({ response })
+
         if (response.status == 200) {
           setLoading(false)
           setUser(response.data.result)

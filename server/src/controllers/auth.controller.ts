@@ -16,9 +16,8 @@ export default class AuthController extends AbstractController {
           const payload =
             await googleOAuthClient.getTokenAndVerifyFromCode(code)
 
-          console.log({ payload })
-
           let exists = true
+
           const data = {
             existingUser: await this.ctx.db.client.user.findFirst({
               where: {

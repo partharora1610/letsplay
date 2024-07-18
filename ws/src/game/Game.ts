@@ -1,13 +1,14 @@
 import { WebSocket } from "ws"
 import TicTacToe from "./TicTacToe"
 import { v4 as uuidv4 } from "uuid"
+import User from "utils/User"
 
 class Game {
-  public player1: WebSocket
-  public player2: WebSocket
+  public player1: User
+  public player2: User
   private board: TicTacToe
 
-  constructor(player1: WebSocket, player2: WebSocket) {
+  constructor(player1: User, player2: User) {
     this.player1 = player1
     this.player2 = player2
     this.board = new TicTacToe()
@@ -31,14 +32,14 @@ class Game {
     // }
     // we will use newGame.id to send
 
-    this.player1.send(
+    this.player1.socket.send(
       JSON.stringify({
         type: "game_start",
         payload: { player: "X", gameId },
       })
     )
 
-    this.player2.send(
+    this.player2.socket.send(
       JSON.stringify({
         type: "game_start",
         payload: { player: "O", gameId },
@@ -64,7 +65,7 @@ class Game {
     }
 
     if (this.board.isDrawGame()) {
-      this.player1.send(
+      this.player1.socket.send(
         JSON.stringify({
           type: "game_over",
           payload: {
@@ -74,7 +75,7 @@ class Game {
         })
       )
 
-      this.player2.send(
+      this.player2.socket.send(
         JSON.stringify({
           type: "game_over",
           payload: {
@@ -94,7 +95,7 @@ class Game {
       const winner = this.board.getWinner()
       const board = this.board.getBoard()
 
-      this.player1.send(
+      this.player1.socket.send(
         JSON.stringify({
           type: "game_over",
           payload: {
@@ -105,7 +106,7 @@ class Game {
         })
       )
 
-      this.player2.send(
+      this.player2.socket.send(
         JSON.stringify({
           type: "game_over",
           payload: {
@@ -121,7 +122,7 @@ class Game {
     }
 
     // These are already pushed to the redis queue from they will be picked...
-    this.player1.send(
+    this.player1.socket.send(
       JSON.stringify({
         type: "make_move",
         payload: {
@@ -132,7 +133,7 @@ class Game {
       })
     )
 
-    this.player2.send(
+    this.player2.socket.send(
       JSON.stringify({
         type: "make_move",
         payload: {

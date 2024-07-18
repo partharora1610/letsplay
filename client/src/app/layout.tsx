@@ -20,18 +20,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <AuthContext>
-        <GoogleAuthProvider>
+      <body className={`${inter.className} bg-primary-500 flex min-h-screen`}>
+        <AuthContext>
           <ContextProvider>
-            <body
-              className={`${inter.className} bg-primary-500 flex min-h-screen`}
-            >
+            <GoogleAuthProvider>
               <Sidebar />
               {children}
-            </body>
+            </GoogleAuthProvider>
           </ContextProvider>
-        </GoogleAuthProvider>
-      </AuthContext>
+        </AuthContext>
+      </body>
     </html>
   )
 }

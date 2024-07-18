@@ -27,9 +27,8 @@ export default class Server {
   #registerMiddlewares() {
     this.engine.use(logger())
     this.engine.use(Express.json())
-
     this.engine.use(
-      cors({ credentials: true, origin: "http://localhost:3000" })
+      cors({ origin: "http://localhost:3000", credentials: true })
     )
     this.engine.use(
       cookieSession({
@@ -71,11 +70,6 @@ export default class Server {
     authRouter.register()
     userRouter.register()
 
-    this.engine.get("/health", (req, res) => {
-      console.log("health check")
-      return res.status(200).send("ok")
-    })
-
     this.engine.all(
       "*",
       async (__: Request, _: Response, next: NextFunction) => {
@@ -88,6 +82,7 @@ export default class Server {
     this.#registerMiddlewares()
     this.#registerHandlers()
     this.engine.use(error())
+
     this.engine.listen(parseInt(getEnvVar("PORT")), () => {
       console.log(`\nServer listening at ${getEnvVar("PORT")}`)
     })
