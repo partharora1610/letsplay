@@ -2,8 +2,8 @@ import User from "utils/User"
 
 export class SocketManager {
   private static instance: SocketManager
-  private interestedSockets: Map<string, User[]>
-  private userRoomMappping: Map<string, string>
+  public interestedSockets: Map<string, User[]>
+  public userRoomMappping: Map<string, string>
 
   private constructor() {
     this.interestedSockets = new Map<string, User[]>()
@@ -24,11 +24,20 @@ export class SocketManager {
       ...(this.interestedSockets.get(roomId) || []),
       user,
     ])
+
     this.userRoomMappping.set(user.userId, roomId)
+
+    // debug this
+    console.log("User added")
+    console.log("User room mapping", this.userRoomMappping)
+    console.log("Interested sockets", this.interestedSockets)
   }
 
   broadcast(roomId: string, message: string) {
     const users = this.interestedSockets.get(roomId)
+
+    console.log("Broadcasting to room", roomId)
+    console.log("Users in room", users)
 
     if (!users) {
       console.error("No users in room?")
@@ -49,9 +58,11 @@ export class SocketManager {
     const room = this.interestedSockets.get(roomId) || []
     const remainingUsers = room.filter((u) => u.userId !== user.userId)
     this.interestedSockets.set(roomId, remainingUsers)
+
     if (this.interestedSockets.get(roomId)?.length === 0) {
       this.interestedSockets.delete(roomId)
     }
+
     this.userRoomMappping.delete(user.userId)
   }
 }

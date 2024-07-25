@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,30 +12,24 @@ model User {
   name      String
   email     String   @unique
   sub       String   @unique
-  games     Game[]
-  players   Player[]
+  rating    Int      @default(800)
+  gamesAsX Game[] @relation("gameAsX")
+  gamesAsO Game[] @relation("gameAsO")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Game {
   id        String   @id @default(cuid())
-  players   Player[]
-  moves     Move[]
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+  moves     Move[] 
+  playerXId String
+  playerX   User     @relation("gameAsX",fields: [playerXId], references: [id])
+  playerOId String
+  playerO   User    @relation("gameAsO",fields: [playerOId], references: [id])
+  status    GameStatus @default(NOT_STARTED)
+  result    GameResult?
 
-model Player {
-  id        String   @id @default(cuid())
-  name      String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  gameId    String
-  game      Game     @relation(fields: [gameId], references: [id])
-  moves     Move[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -47,9 +38,25 @@ model Move {
   id        String   @id @default(cuid())
   gameId    String
   game      Game     @relation(fields: [gameId], references: [id])
-  playerId  String
-  player    Player   @relation(fields: [playerId], references: [id])  
   move      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+
+  @@index([gameId])
+}
+
+
+enum GameStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  TIME_UP
+}
+
+enum GameResult {
+  X_WINS
+  O_WINS
+  DRAW
 }

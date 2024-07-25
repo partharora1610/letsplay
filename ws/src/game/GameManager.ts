@@ -1,7 +1,7 @@
 import { WebSocket } from "ws"
 import Game from "./Game"
 import User from "utils/User"
-import { INIT_GAME } from "../ws-types/index"
+import { GAME_ADDED, INIT_GAME, MAKE_MOVE } from "../ws-types/index"
 import { SocketManager } from "../sockets/SocketManager"
 
 class GameManager {
@@ -43,6 +43,10 @@ class GameManager {
     SocketManager.getInstance().removeUser(user)
   }
 
+  private removeGame(gameId: string) {
+    this.games = this.games.filter((game) => game.gameId !== gameId)
+  }
+
   private addHandler(user: User) {
     const socket = user.socket
 
@@ -54,7 +58,6 @@ class GameManager {
 
       if (message.type == INIT_GAME) {
         if (this.pendingGameId) {
-          // pending game in the server exist...
           const game = this.games.find((g) => g.gameId === this.pendingGameId)
 
           if (!game) {
@@ -75,27 +78,38 @@ class GameManager {
             return
           }
 
-          // adding the second user to the same room...
           SocketManager.getInstance().addUser(user, game.gameId)
 
-          // updating the second player in the Game and broadcasting the message to everyone...
           await game?.updateSecondPlayer(user.userId)
           this.pendingGameId = null
         } else {
-          // creating new game with one user as of now
           const game = new Game(user.userId, null)
           this.games.push(game)
           this.pendingGameId = game.gameId
 
           SocketManager.getInstance().addUser(user, game.gameId)
 
-          // This will tell th client that we are waiting for the new user
           SocketManager.getInstance().broadcast(
             game.gameId,
             JSON.stringify({
-              type: "game_added",
+              type: GAME_ADDED,
             })
           )
+        }
+      } else if (message.type == MAKE_MOVE) {
+        console.log("Making Move")
+        console.log(this.games)
+        const game = this.games.find((g) => g.gameId === message.payload.gameId)
+
+        if (!game) {
+          console.log("Game not found")
+          return
+        }
+
+        game.makeMove(user, message.payload.move)
+
+        if (game.game.isGameOver()) {
+          this.removeGame(game.gameId)
         }
       }
     })

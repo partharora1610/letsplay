@@ -1,53 +1,92 @@
 type Player = "X" | "O" | null
+type Board = Player[][]
+
+interface GameHistory {
+  board: Board
+  move: string
+  player: Player
+}
 
 class TicTacToe {
-  private board: Player[][]
+  private board: Board
   private moves: string[]
-  private currentPlayer: Player
+  private activePlayer: Player
   private winningPlayer: Player
+  private history: GameHistory[]
 
   constructor() {
     this.board = Array.from({ length: 3 }, () => Array(3).fill(null))
-    this.currentPlayer = "X"
+    this.activePlayer = "X"
     this.winningPlayer = null
     this.moves = []
+    this.history = []
   }
 
-  isValidMove(row: number, col: number): boolean {
-    return this.board[row][col] === null && this.winningPlayer === null
+  public isValidMove(row: number, col: number): boolean {
+    return (
+      row >= 0 &&
+      row < 3 &&
+      col >= 0 &&
+      col < 3 &&
+      this.board[row][col] === null &&
+      this.winningPlayer === null
+    )
   }
 
-  private checkWinner(): Player {
-    for (let i = 0; i < 3; i++) {
-      if (
-        this.board[i][0] &&
-        this.board[i][0] === this.board[i][1] &&
-        this.board[i][1] === this.board[i][2]
-      ) {
-        return this.board[i][0]
-      }
-      if (
-        this.board[0][i] &&
-        this.board[0][i] === this.board[1][i] &&
-        this.board[1][i] === this.board[2][i]
-      ) {
-        return this.board[0][i]
-      }
-    }
+  private checkVictory(): Player {
+    const winPatterns = [
+      [
+        [0, 0],
+        [0, 1],
+        [0, 2],
+      ],
+      [
+        [1, 0],
+        [1, 1],
+        [1, 2],
+      ],
+      [
+        [2, 0],
+        [2, 1],
+        [2, 2],
+      ],
+      [
+        [0, 0],
+        [1, 0],
+        [2, 0],
+      ],
+      [
+        [0, 1],
+        [1, 1],
+        [2, 1],
+      ],
+      [
+        [0, 2],
+        [1, 2],
+        [2, 2],
+      ],
+      [
+        [0, 0],
+        [1, 1],
+        [2, 2],
+      ],
+      [
+        [0, 2],
+        [1, 1],
+        [2, 0],
+      ],
+    ]
 
-    if (
-      this.board[0][0] &&
-      this.board[0][0] === this.board[1][1] &&
-      this.board[1][1] === this.board[2][2]
-    ) {
-      return this.board[0][0]
-    }
-    if (
-      this.board[0][2] &&
-      this.board[0][2] === this.board[1][1] &&
-      this.board[1][1] === this.board[2][0]
-    ) {
-      return this.board[0][2]
+    for (const pattern of winPatterns) {
+      const [a, b, c] = pattern
+
+      if (
+        this.board[a[0]][a[1]] &&
+        this.board[a[0]][a[1]] === this.board[b[0]][b[1]] &&
+        this.board[a[0]][a[1]] === this.board[c[0]][c[1]]
+      ) {
+        return this.board[a[0]][a[1]]
+      }
     }
 
     return null
@@ -60,19 +99,28 @@ class TicTacToe {
     )
   }
 
+  // we might not need to change the features here
   public makeMove(row: number, col: number): boolean {
     if (!this.isValidMove(row, col)) {
       return false
     }
 
-    this.board[row][col] = this.currentPlayer
-    this.winningPlayer = this.checkWinner()
+    this.board[row][col] = this.activePlayer
 
-    if (!this.winningPlayer) {
-      this.currentPlayer = this.currentPlayer === "X" ? "O" : "X"
-    }
+    this.winningPlayer = this.checkVictory()
 
     this.moves.push(`${row},${col}`)
+
+    this.history.push({
+      board: this.getBoard(),
+      move: `${row},${col}`,
+      player: this.activePlayer,
+    })
+
+    if (!this.winningPlayer && !this.isDraw()) {
+      this.activePlayer = this.activePlayer === "X" ? "O" : "X"
+    }
+
     return true
   }
 
@@ -80,7 +128,7 @@ class TicTacToe {
     return this.moves
   }
 
-  public getWinner(): Player {
+  public getwinningPlayer(): Player {
     return this.winningPlayer
   }
 
@@ -88,16 +136,49 @@ class TicTacToe {
     return this.winningPlayer !== null || this.isDraw()
   }
 
-  public getBoard(): Player[][] {
-    return this.board
+  public getBoard(): Board {
+    return this.board.map((row) => [...row])
   }
 
-  public getCurrentPlayer(): Player {
-    return this.currentPlayer
+  public getActivePlayer(): Player {
+    return this.activePlayer
   }
 
   public isDrawGame(): boolean {
     return this.isDraw()
+  }
+
+  public getHistory(): GameHistory[] {
+    return this.history
+  }
+
+  public undoLastMove(): boolean {
+    if (this.history.length === 0) {
+      return false
+    }
+
+    this.history.pop()
+    this.moves.pop()
+
+    if (this.history.length === 0) {
+      this.board = Array.from({ length: 3 }, () => Array(3).fill(null))
+      this.activePlayer = "X"
+    } else {
+      const lastState = this.history[this.history.length - 1]
+      this.board = lastState.board
+      this.activePlayer = lastState.player === "X" ? "O" : "X"
+    }
+
+    this.winningPlayer = null
+    return true
+  }
+
+  public resetGame(): void {
+    this.board = Array.from({ length: 3 }, () => Array(3).fill(null))
+    this.activePlayer = "X"
+    this.winningPlayer = null
+    this.moves = []
+    this.history = []
   }
 }
 

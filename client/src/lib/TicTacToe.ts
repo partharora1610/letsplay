@@ -1,11 +1,4 @@
-type Player = "X" | "O" | null
-type Board = Player[][]
-
-interface GameHistory {
-  board: Board
-  move: string
-  player: Player
-}
+import { Board, GameHistory, Player } from "@/types"
 
 class TicTacToe {
   private board: Board
@@ -22,7 +15,7 @@ class TicTacToe {
     this.history = []
   }
 
-  isValidMove(row: number, col: number): boolean {
+  public isValidMove(row: number, col: number): boolean {
     return (
       row >= 0 &&
       row < 3 &&
@@ -79,6 +72,7 @@ class TicTacToe {
 
     for (const pattern of winPatterns) {
       const [a, b, c] = pattern
+
       if (
         this.board[a[0]][a[1]] &&
         this.board[a[0]][a[1]] === this.board[b[0]][b[1]] &&
@@ -104,6 +98,8 @@ class TicTacToe {
     }
 
     this.board[row][col] = this.activePlayer
+    console.log(this.board)
+
     this.winningPlayer = this.checkVictory()
 
     this.moves.push(`${row},${col}`)
@@ -125,7 +121,7 @@ class TicTacToe {
     return this.moves
   }
 
-  public getwinningPlayer(): Player {
+  public getWinningPlayer(): Player {
     return this.winningPlayer
   }
 
@@ -147,27 +143,6 @@ class TicTacToe {
 
   public getHistory(): GameHistory[] {
     return this.history
-  }
-
-  public undoLastMove(): boolean {
-    if (this.history.length === 0) {
-      return false
-    }
-
-    this.history.pop()
-    this.moves.pop()
-
-    if (this.history.length === 0) {
-      this.board = Array.from({ length: 3 }, () => Array(3).fill(null))
-      this.activePlayer = "X"
-    } else {
-      const lastState = this.history[this.history.length - 1]
-      this.board = lastState.board
-      this.activePlayer = lastState.player === "X" ? "O" : "X"
-    }
-
-    this.winningPlayer = null
-    return true
   }
 
   public resetGame(): void {

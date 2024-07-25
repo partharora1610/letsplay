@@ -3,9 +3,12 @@
 import React, { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useWebSocket } from "@/context/SocketContext"
-import { MenuSquare } from "lucide-react"
+import useGameStore from "@/zustand/game.store"
+
+const GAME_STARTED = "game_started"
 
 const ConnectingCard: React.FC = () => {
+  const { updateGameMetadata } = useGameStore()
   const socket = useWebSocket()
   const router = useRouter()
 
@@ -25,6 +28,13 @@ const ConnectingCard: React.FC = () => {
     socket.onmessage = function (event) {
       const message = JSON.parse(event.data)
       console.log(message)
+
+      if (message.type === GAME_STARTED) {
+        updateGameMetadata(message.payload)
+
+        console.log("Game started")
+        router.push(`/game/${message.payload.gameId}`)
+      }
     }
   }, [socket])
 
