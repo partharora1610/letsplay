@@ -1,16 +1,18 @@
 import { WebSocket } from "ws"
 import Game from "./Game"
 import User from "utils/User"
+import { INIT_GAME } from "../ws-types/index"
+import { SocketManager } from "../sockets/SocketManager"
 
 class GameManager {
   games: Game[]
   private static instance: GameManager
-  private pendingUser: User | null
-  private users: User[]
+  public pendingGameId: string | null
+  public users: User[]
 
   private constructor() {
     this.games = []
-    this.pendingUser = null
+    this.pendingGameId = null
     this.users = []
   }
 
@@ -36,9 +38,9 @@ class GameManager {
       return
     }
 
-    // updating the users
     this.users = this.users.filter((user) => user.socket !== socket)
-    // Manage the same in the socketmanager Class
+
+    SocketManager.getInstance().removeUser(user)
   }
 
   private addHandler(user: User) {
@@ -46,38 +48,55 @@ class GameManager {
 
     if (socket == null) return
 
-    socket.on("message", (data) => {
+    socket.on("message", async (data) => {
       const message = JSON.parse(data.toString())
+      console.log(message)
 
-      switch (message.type) {
-        case "init_game":
-          if (this.pendingUser) {
-            const game = new Game(this.pendingUser, user)
-            this.games.push(game)
-            this.pendingUser = null
-          } else {
-            this.pendingUser = user
+      if (message.type == INIT_GAME) {
+        if (this.pendingGameId) {
+          // pending game in the server exist...
+          const game = this.games.find((g) => g.gameId === this.pendingGameId)
+
+          if (!game) {
+            console.error("Game not found")
+            return
           }
-          break
 
-        case "make_move":
-          const { move } = message
+          if (user.userId == game.player1UserId) {
+            SocketManager.getInstance().broadcast(
+              game.gameId,
+              JSON.stringify({
+                type: "game_alert",
+                payload: {
+                  message: "Trying to Connect with yourself?",
+                },
+              })
+            )
+            return
+          }
 
-          // This logic is faulty
-          const game = this.games.find(
-            (g) => g.player1 === user || g.player2 === user
+          // adding the second user to the same room...
+          SocketManager.getInstance().addUser(user, game.gameId)
+
+          // updating the second player in the Game and broadcasting the message to everyone...
+          await game?.updateSecondPlayer(user.userId)
+          this.pendingGameId = null
+        } else {
+          // creating new game with one user as of now
+          const game = new Game(user.userId, null)
+          this.games.push(game)
+          this.pendingGameId = game.gameId
+
+          SocketManager.getInstance().addUser(user, game.gameId)
+
+          // This will tell th client that we are waiting for the new user
+          SocketManager.getInstance().broadcast(
+            game.gameId,
+            JSON.stringify({
+              type: "game_added",
+            })
           )
-
-          if (game) {
-            game.makeMove(socket, move)
-          }
-          break
-
-        case "leave_game":
-          break
-
-        default:
-          break
+        }
       }
     })
   }

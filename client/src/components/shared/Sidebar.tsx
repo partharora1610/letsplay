@@ -1,18 +1,22 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
+import { Star } from "lucide-react"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Login from "@/components/shared/Login"
 import useAuthStore from "@/zustand/user.store"
+import { useSocket } from "@/hooks/useSocket"
 
-import { Star } from "lucide-react"
 const Sidebar = () => {
   const { user, isAuthenticated } = useAuthStore()
+  const socket = useSocket()
 
   return (
-    <div className="w-64 bg-gray-800 p-4">
+    <div className="w-64 flex-shrink-0 bg-gray-800 p-4">
       <div>
+        {/* {JSON.stringify(user)} */}
         <div className="flex items-center gap-3">
           <Avatar className="rounded-md w-12 h-12">
             <AvatarImage src="https://github.com/shadcn.png" />
@@ -58,9 +62,14 @@ const Sidebar = () => {
         </Login>
       )}
 
-      {/* {isAuthenticated && (
-        <Button className="w-full bg-red-200/80 mt-20">Signout</Button>
-      )} */}
+      {/*  */}
+      {/* <Button
+        onClick={() => {
+          socket?.send(JSON.stringify({ type: "init_game" }))
+        }}
+      >
+        Testing Game
+      </Button> */}
     </div>
   )
 }

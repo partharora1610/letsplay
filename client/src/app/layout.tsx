@@ -20,12 +20,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-primary-500 flex min-h-screen`}>
+      <body className={inter.className}>
         <AuthContext>
           <ContextProvider>
             <GoogleAuthProvider>
-              <Sidebar />
-              {children}
+              <div className="flex h-screen bg-primary-500">
+                <Sidebar />
+                <main className="flex-grow overflow-auto">{children}</main>
+              </div>
             </GoogleAuthProvider>
           </ContextProvider>
         </AuthContext>

@@ -4,16 +4,20 @@
     "module": "CommonJS",
     "moduleDetection": "force",
     "esModuleInterop": true,
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": true,
     "baseUrl": "./src",
     "experimentalDecorators": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "*": ["*"],
+      "sockets/*": ["sockets/*"]
+    }
   },
   "ts-node": { "files": true },
   "include": ["src/**/*"]

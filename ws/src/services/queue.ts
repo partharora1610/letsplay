@@ -1,8 +1,5 @@
 import Redis from "ioredis"
 
-/**
- * Need to have a separate process that subsribes to this queue and just put the event in the pg database
- */
 type Move = {}
 
 const insertMoveToDatabase = async (data: Move) => {
@@ -30,16 +27,14 @@ class Queue {
     return Queue.instance
   }
 
-  // Push a move to the Redis queue
   async pushMove(move: Move) {
     const moveData = { ...move }
     await this.redis.rpush(this.queueKey, JSON.stringify(moveData))
     this.processQueue()
   }
 
-  // Process the Redis queue
   async processQueue() {
-    if (this.processing) return // Prevent multiple processors
+    if (this.processing) return
 
     this.processing = true
     try {

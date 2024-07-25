@@ -4,6 +4,7 @@ const JOIN_GAME = "join_game"
 const MAKE_MOVE = "make_move"
 const GAME_STATE = "game_state"
 
+import Link from "next/link"
 import React, { useState } from "react"
 
 export default function Home() {
@@ -35,9 +36,11 @@ const Main = () => {
         </h1>
         <div className="grid grid-cols-1 gap-4">
           <div className="bg-gray-700 p-4 rounded-lg">
-            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-2 w-full">
-              Play online
-            </button>
+            <Link href="/game/online">
+              <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-2 w-full">
+                Play online
+              </button>
+            </Link>
             <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-2 w-full">
               Play with a friend
             </button>
