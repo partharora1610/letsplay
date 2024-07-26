@@ -23,6 +23,7 @@ class TicTacToe {
   }
 
   public isValidMove(row: number, col: number): boolean {
+    console.log(row, col)
     return (
       row >= 0 &&
       row < 3 &&
@@ -121,6 +122,7 @@ class TicTacToe {
       this.activePlayer = this.activePlayer === "X" ? "O" : "X"
     }
 
+    console.log(this.board)
     return true
   }
 

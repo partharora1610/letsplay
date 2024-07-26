@@ -23,7 +23,7 @@ class Game {
   }
 
   makeMove(player: User, move: string) {
-    const row = parseInt(move) / 3
+    const row = Math.floor(parseInt(move) / 3)
     const col = parseInt(move) % 3
 
     if (this.game.isValidMove(row, col)) {
@@ -64,6 +64,8 @@ class Game {
     })
 
     await this.createGameInDB()
+
+    console.log("Sending game satrted to the players")
 
     SocketManager.getInstance().broadcast(
       this.gameId,

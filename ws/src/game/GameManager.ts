@@ -97,8 +97,6 @@ class GameManager {
           )
         }
       } else if (message.type == MAKE_MOVE) {
-        console.log("Making Move")
-        console.log(this.games)
         const game = this.games.find((g) => g.gameId === message.payload.gameId)
 
         if (!game) {

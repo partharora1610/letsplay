@@ -28,16 +28,16 @@ export class SocketManager {
     this.userRoomMappping.set(user.userId, roomId)
 
     // debug this
-    console.log("User added")
-    console.log("User room mapping", this.userRoomMappping)
-    console.log("Interested sockets", this.interestedSockets)
+    // console.log("User added")
+    // console.log("User room mapping", this.userRoomMappping)
+    // console.log("Interested sockets", this.interestedSockets)
   }
 
   broadcast(roomId: string, message: string) {
     const users = this.interestedSockets.get(roomId)
 
-    console.log("Broadcasting to room", roomId)
-    console.log("Users in room", users)
+    // console.log("Broadcasting to room", roomId)
+    // console.log("Users in room", users)
 
     if (!users) {
       console.error("No users in room?")

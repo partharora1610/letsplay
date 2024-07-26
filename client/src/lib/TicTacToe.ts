@@ -1,7 +1,7 @@
 import { Board, GameHistory, Player } from "@/types"
 
 class TicTacToe {
-  private board: Board
+  public board: Board
   private moves: string[]
   private activePlayer: Player
   private winningPlayer: Player
@@ -98,7 +98,6 @@ class TicTacToe {
     }
 
     this.board[row][col] = this.activePlayer
-    console.log(this.board)
 
     this.winningPlayer = this.checkVictory()
 
