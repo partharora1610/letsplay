@@ -14,6 +14,8 @@ import error from "middlewares/error.middleware"
 import cookieSession from "cookie-session"
 import AuthRouter from "routers/auth.router"
 import UserRouter from "routers/user.router"
+import GameRouter from "routers/game.router"
+import LeaderBoardRouter from "routers/leaderboard"
 
 export default class Server {
   db: IDatabase
@@ -64,11 +66,21 @@ export default class Server {
 
     const ctx = new Context(this.db)
 
+    // intializing routers
     const authRouter = new AuthRouter(ctx, this.engine, "/auth")
     const userRouter = new UserRouter(ctx, this.engine, "/user")
+    const gameRouter = new GameRouter(ctx, this.engine, "/game")
+    const leaderBoardRouter = new LeaderBoardRouter(
+      ctx,
+      this.engine,
+      "/leaderboard"
+    )
 
+    // registering routers
     authRouter.register()
     userRouter.register()
+    gameRouter.register()
+    leaderBoardRouter.register()
 
     this.engine.all(
       "*",

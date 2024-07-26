@@ -6,8 +6,8 @@ import prisma from "../db/index"
 
 const GAME_STARTED = "game_started"
 const MAKE_MOVE = "make_move"
-type GAME_STATUS = "IN_PROGRESS" | "COMPLETED" | "ABANDONED" | "TIME_UP" | ""
-type GAME_RESULT = "X_WINS" | "O_WINS" | "DRAW" | ""
+type GAME_STATUS = "IN_PROGRESS" | "COMPLETED" | "ABANDONED" | "TIME_UP"
+type GAME_RESULT = "X_WINS" | "O_WINS" | "DRAW"
 
 class Game {
   public gameId: string
@@ -15,11 +15,11 @@ class Game {
   public player2UserId: string | null
   public game: TicTacToe
 
-  constructor(player1: string, player2: string | null, gameId?: string) {
+  constructor(player1: string, player2: string | null) {
     this.player1UserId = player1
     this.player2UserId = player2
     this.game = new TicTacToe()
-    this.gameId = gameId ?? randomUUID()
+    this.gameId = randomUUID()
   }
 
   makeMove(player: User, move: string) {
@@ -36,7 +36,7 @@ class Game {
         type: MAKE_MOVE,
         payload: {
           move: move,
-          player: player.id,
+          player: player.userId,
         },
       })
     )
@@ -44,11 +44,12 @@ class Game {
     this.saveMoveInDB(row, col)
 
     if (this.game.getwinningPlayer() !== null) {
-      this.endGame("", "")
+      const result = this.game.getwinningPlayer() === "X" ? "X_WINS" : "O_WINS"
+      this.endGame("COMPLETED", result)
     }
 
     if (this.game.isDrawGame()) {
-      this.endGame("", "")
+      this.endGame("COMPLETED", "DRAW")
     }
   }
 
@@ -64,8 +65,6 @@ class Game {
     })
 
     await this.createGameInDB()
-
-    console.log("Sending game satrted to the players")
 
     SocketManager.getInstance().broadcast(
       this.gameId,
@@ -88,6 +87,9 @@ class Game {
   }
 
   async createGameInDB() {
+    console.log("Creating game in DB")
+    console.log(this.gameId)
+
     const game = await prisma.game.create({
       data: {
         id: this.gameId,
@@ -126,8 +128,8 @@ class Game {
         id: this.gameId,
       },
       data: {
-        status: "COMPLETED",
-        result: "X_WINS",
+        status,
+        result,
       },
     })
 
@@ -136,8 +138,8 @@ class Game {
       JSON.stringify({
         type: "game_over",
         payload: {
-          status: "COMPLETED",
-          result: "X_WINS",
+          status,
+          result,
         },
       })
     )

@@ -7,12 +7,15 @@ import { useWebSocket } from "@/context/SocketContext"
 import useGameStore from "@/zustand/game.store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import useAuthStore from "@/zustand/user.store"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
-const GAME_STARTED = "game_started"
+// const JOIN_GAME = "join_game"
+// const GAME_STATE = "game_state"
+
 const GAME_OVER = "game_over"
-const JOIN_GAME = "join_game"
+const GAME_STARTED = "game_started"
 const MAKE_MOVE = "make_move"
-const GAME_STATE = "game_state"
 const INIT_GAME = "init_game"
 const GAME_ADDED = "game_added"
 
@@ -22,7 +25,7 @@ interface Event {
 
 const Page = () => {
   const socket = useWebSocket()
-  const { game, updateGameMetadata } = useGameStore()
+  const { game, updateGameMetadata, makeMove } = useGameStore()
   const { id } = useParams()
   const router = useRouter()
 
@@ -46,8 +49,11 @@ const Page = () => {
 
         case MAKE_MOVE:
           const move = message.payload.move
+          makeMove(Math.floor(move / 3), move % 3)
+          break
 
-          game.makeMove(Math.floor(move / 3), move % 3)
+        case GAME_OVER:
+          console.log("Game over")
           break
 
         default:
@@ -69,11 +75,9 @@ const Page = () => {
       )
     }
 
-    // Adding this messages here
     socket.addEventListener("message", handleWebSocketMessage)
 
     return () => {
-      // cleaning this function
       socket.removeEventListener("message", handleWebSocketMessage)
     }
   }, [socket, handleWebSocketMessage])
@@ -85,14 +89,15 @@ const Page = () => {
   return (
     <div className="min-h-screen text-white">
       <GameMetadata />
-      {JSON.stringify(game.board)}
-      <p className="text-xl mb-8">{id}</p>
+
+      {/* {JSON.stringify(game.board)} */}
+      {/* <p className="text-xl mb-8">{id}</p> */}
       <div className="flex flex-col items-center justify-center mt-40">
         <GameBoard />
       </div>
-      {game.isGameOver() && <p>The game is over</p>}
+      {/* {game.isGameOver() && <p>The game is over</p>}
       {game.isDrawGame() && <p>There is a draw</p>}
-      {game.getWinningPlayer() && <p>There is a winner</p>}
+      {game.getWinningPlayer() && <p>There is a winner</p>} */}
     </div>
   )
 }
@@ -172,8 +177,7 @@ const GameBoard: React.FC = () => {
   const playerVariant = gameMetadata.XPlayer.id === user?.id ? "X" : "O"
 
   const handleClick = (index: number) => {
-    // to prevent the user from making a move when it's not their turn
-    // if (game.getActivePlayer() !== playerVariant) return
+    if (game.getActivePlayer() !== playerVariant) return
 
     const row = Math.floor(index / 3)
     const col = index % 3
@@ -190,19 +194,57 @@ const GameBoard: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2 relative">
       {game.board.flat().map((value, index) => (
         <button
           key={index}
           className={`w-24 h-24 flex items-center justify-center text-3xl font-bold bg-white border-2 border-gray-300
-      ${value === "X" ? "text-blue-500" : value === "O" ? "text-red-500" : ""}
-      `}
+          ${
+            value === "X"
+              ? "text-blue-500"
+              : value === "O"
+              ? "text-red-500"
+              : ""
+          }
+          `}
           onClick={() => handleClick(index)}
           disabled={value !== null}
         >
           {JSON.stringify(value)}
         </button>
       ))}
+
+      {!game.isGameOver() && <GameOverModal />}
+    </div>
+  )
+}
+
+const GameOverModal: React.FC = () => {
+  const { game } = useGameStore()
+
+  const getReason = () => {
+    if (game.isDrawGame()) {
+      return "The game is a draw"
+    } else {
+      const winner = game.getWinningPlayer()
+      return winner ? `Player ${winner} wins` : "Game Over"
+    }
+  }
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-full py-4 bg-gray-600/80 rounded text-white ">
+        <div className="flex items-center flex-col justify-center mb-4">
+          <h3 className="font-semibold mb-2">GAME OVER</h3>
+          <p className="text-3xl">{getReason()}</p>
+        </div>
+        <div className="flex items-center gap-4 justify-center">
+          <Link href="/">
+            <Button className="bg-blue-500 cursor-pointer">Exit</Button>
+          </Link>
+          <Button className="bg-blue-500 cursor-pointer">Play Again</Button>
+        </div>
+      </div>
     </div>
   )
 }
